@@ -2,21 +2,29 @@
 
 module sim_top();
 
-import "DPI-C" function bit dpiInitRawSocket (input string ifname, input bit isProm);
-import "DPI-C" function bit dpiDeinitRawSocket ();
-import "DPI-C" function int dpiRecvFrame ();
-import "DPI-C" function bit dpiSendFrame ();
-import "DPI-C" function byte dpiGetByte ();
-import "DPI-C" function void dpiPutByte (input byte val); 
+import "DPI-C" function bit dpiInitRSContext (input int numSocks);
+import "DPI-C" function void dpiDeinitRSContext ();
+import "DPI-C" function int dpiInitRawSocket (input string ifname, input bit isProm);
+import "DPI-C" function bit dpiDeinitRawSocket (input int rsh);
+import "DPI-C" function int dpiRecvFrame (input int rsh, bit isBlk);
+import "DPI-C" function bit dpiSendFrame (input int rsh);
+import "DPI-C" function byte dpiGetByte (input int rsh);
+import "DPI-C" function void dpiPutByte (input int rsh, input byte val); 
 
-reg clk, rawSockReady;
-integer cycle, rxSize, rxProg;
+reg clk;
+int cycle, rxSize, rxProg;
+int	rsid;
+
 initial begin
 	clk = 1'b0;
 	cycle = 0;
-	rawSockReady = dpiInitRawSocket("enp0s31f6", 1'b1);
-	if (rawSockReady) begin
-		rxSize = dpiRecvFrame();
+	if (dpiInitRSContext(1) == 1'b0) begin
+		$display("Failed to initialise DPI socket context.");
+		$finish;
+	end
+	rsid = dpiInitRawSocket("enp0s31f6", 1'b0);
+	if (rsid >= 0) begin
+		rxSize = dpiRecvFrame(rsid, 1'b1);
 		rxProg = 0;
 	end else begin
 		$display("Failed to initialise socket.");
@@ -29,12 +37,12 @@ always #5 clk = ~clk;
 always @ (posedge clk) begin
 	
 	if (rxSize > rxProg) begin
-		$display("%d: %H", cycle, dpiGetByte());
+		$display("%d: %H", cycle, dpiGetByte(rsid));
 	end else
 		$display("%d", cycle);
 	cycle <= cycle + 1;
 	if (cycle == 20) begin
-		dpiDeinitRawSocket();
+		dpiDeinitRSContext();
 		$finish;
 	end
 end

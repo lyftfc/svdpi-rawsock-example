@@ -25,3 +25,10 @@ redefinition warning.
 toolchain is not in the path of root user. Change it as needed.
 - Root privilege is requried for opening raw socket, hence the 
 `sudo`. (Also required for `make clean`.)
+- The raw socket works in sniffer mode, which means the OS kernel 
+will still receive the packets. Outgoing packets from OS kernel 
+will also be sniffed. To prevent this, run
+`sudo iptables -A INPUT -i your_if_name -j DROP`
+to block the OS kernel, and 
+`sudo iptables -D INPUT -i your_if_name -j DROP`
+to restore.
