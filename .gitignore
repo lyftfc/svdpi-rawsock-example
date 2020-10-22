@@ -1,0 +1,7 @@
+/.vscode/
+/.Xil/
+/xsim.dir/
+*.log
+*.jou
+*.pb
+*.wdb
