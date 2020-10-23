@@ -1,5 +1,5 @@
 
-SV_SRCS = sim_top.sv
+SV_SRCS = sim_top.sv pktunit_axis_feeder.sv pktunit_axis_poller.sv
 C_SRCS = rawsock.c
 TOP_MOD = sim_top
 
