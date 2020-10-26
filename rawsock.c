@@ -6,7 +6,7 @@
 #include <linux/if_ether.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#define __USE_MISC		// TODO: Fix IntelliSense. REMOVE THIS WHEN COMPILE.
+// #define __USE_MISC		// TODO: Fix IntelliSense. REMOVE THIS WHEN COMPILE.
 #include <net/if.h>
 #include <svdpi.h>
 
@@ -22,7 +22,7 @@ typedef struct rsContext {
     uint8_t _ifMAC[ETH_ALEN];
     char _ifName[IFNAMSIZ];
     uint8_t *txBuff, *rxBuff;
-    int txSize, rxProg, rxSize;
+    int txSize, rxSize;
 } rsContext_t;
 
 static rsContext_t *rsc = NULL;
@@ -34,8 +34,8 @@ rsHandler dpiInitRawSocket(const char *ifname, svBit isProm);
 svBit dpiDeinitRawSocket(rsHandler rsh);
 int dpiRecvFrame(rsHandler rsh, svBit isBlk);
 svBit dpiSendFrame(rsHandler rsh);
-uint8_t dpiGetByte(rsHandler rsh);
-void dpiPutByte(rsHandler rsh, uint8_t val);
+uint8_t dpiGetByte(rsHandler rsh, int ofs);
+void dpiPutByte(rsHandler rsh, int ofs, uint8_t val);
 
 /* 
  * Initialises the given number of raw socket contexts in a session.
@@ -121,7 +121,7 @@ rsHandler dpiInitRawSocket(const char *ifname, svBit isProm)
     if (c._ifMTU <= 0) return -1;
     c.txBuff = malloc(c._ifMTU + 18);
     c.rxBuff = malloc(c._ifMTU + 18);
-    c.txSize = c.rxProg = c.rxSize = 0;
+    c.txSize = c.rxSize = 0;
     DBGP("ifmtu");
 
 	/* Set interface to promiscuous mode if requested */
@@ -200,7 +200,6 @@ int dpiRecvFrame(rsHandler rsh, svBit isBlk)
         rsc[rsh].rxSize = recvfrom(rsc[rsh]._sockfd, 
             rsc[rsh].rxBuff, rsc[rsh]._ifMTU + 18, MSG_DONTWAIT, NULL, NULL);
     if (rsc[rsh].rxSize <= 0) return 0;
-    rsc[rsh].rxProg = 0;
     DBGP("recvframe sock %d", rsh);
     return rsc[rsh].rxSize;
 }
@@ -229,28 +228,28 @@ svBit dpiSendFrame(rsHandler rsh)
 }
 
 /*
- * Returns the next byte from the Rx buffer after receiving a frame.
- * The caller is responsible for ensuring there are remaining bytes
- * in the buffer, or dpiRecvFrame() should be called in prior.
+ * Returns a byte from the given offset ofs of the Rx buffer 
+ * after receiving a frame.
+ * The caller is responsible for ensuring ofs is within the frame.
  */
 DPI_DLLESPEC
-uint8_t dpiGetByte(rsHandler rsh)
+uint8_t dpiGetByte(rsHandler rsh, int ofs)
 {
-    if (rsc[rsh].rxProg >= rsc[rsh].rxSize) return 0;
-    uint8_t r = *(rsc[rsh].rxBuff + rsc[rsh].rxProg);
-    rsc[rsh].rxProg++;
+    if (ofs >= rsc[rsh].rxSize) return 0;
+    uint8_t r = *(rsc[rsh].rxBuff + ofs);
     return r;
 }
 
 /*
- * Writes a byte to the Tx buffer for later sending.
- * The function simply discards the byte if the buffer is full.
+ * Writes a byte to the given offset of the Tx buffer for sending.
+ * The function updates transmit size to the largest ofs, or 
+ * discards the byte if ofs is beyond the buffer area.
  * dpiSendFrame() flushes the Tx buffer and send it to the socket.
  */
 DPI_DLLESPEC
-void dpiPutByte(rsHandler rsh, uint8_t val)
+void dpiPutByte(rsHandler rsh, int ofs, uint8_t val)
 {
-    if (rsc[rsh].txSize >= rsc[rsh]._ifMTU + 18) return;
-    rsc[rsh].txBuff[rsc[rsh].txSize] = val;
-    rsc[rsh].txSize++;
+    if (ofs >= rsc[rsh]._ifMTU + 18) return;
+    rsc[rsh].txBuff[ofs] = val;
+    if (ofs + 1 > rsc[rsh].txSize) rsc[rsh].txSize = ofs + 1;
 }
