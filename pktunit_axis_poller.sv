@@ -45,6 +45,7 @@ always @ (posedge clk) begin
             offset = 0;
             if (dpiSendFrame(rsh)) begin
                 resend = 1'b0;
+                $display("Sent packet to socket %d", rsh);
             end else begin
                 sReady = 1'b0;
                 resend = 1'b1;
@@ -55,6 +56,7 @@ always @ (posedge clk) begin
             if (dpiSendFrame(rsh)) begin
                 sReady = 1'b1;
                 resend = 1'b0;
+                $display("Sent packet to socket %d after retry", rsh);
             end else begin
                 sReady = 1'b0;
             end

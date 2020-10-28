@@ -52,6 +52,10 @@ if __name__ == '__main__':
     info( '*** Starting network\n' )
     nw.start()
 
+    info( '*** Disable checksum offloading\n')
+    for h in nw.hosts:
+        h.cmd('/usr/sbin/ethtool -K ' + h.name + '-eth0 rx off tx off sg off')
+
     info( '*** Starting sshd on hosts\n' )
     for h in nw.hosts:
         h.cmd('/usr/sbin/sshd -D -o UseDNS=no -u0 &')
