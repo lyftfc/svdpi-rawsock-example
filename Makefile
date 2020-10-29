@@ -5,6 +5,7 @@ TOP_MOD = sim_top
 
 XSIM_WD = xsim.dir
 XSC_WD = work
+XSIM_WCFG = testbench.wcfg
 XSIM_SNAPSHOT = $(XSC_WD).$(TOP_MOD)
 SIM_BINARY = $(XSIM_WD)/$(XSIM_SNAPSHOT)/xsimk
 ANALYSE_OUT = $(addprefix $(XSIM_WD)/$(XSC_WD)/, ${SV_SRCS:.sv=.sdb})
@@ -28,7 +29,14 @@ run: sim
 run_gui: sim
 	$(XIL_PATH)/xsim $(XSIM_SNAPSHOT) -g
 
-clean:
-	rm -rf *.jou *.log *.pb *.wdb $(XSIM_WD)/ .Xil/
+run_wave: sim
+	$(XIL_PATH)/xsim $(XSIM_SNAPSHOT) -t dump_wave.tcl
 
-.PHONY: clean run run_gui
+view_wave:
+	if [ ! -f "$(XSIM_WCFG)" ]; then echo "No waveform to view."; exit 1; fi
+	$(XIL_PATH)/vivado -source view_wave.tcl
+
+clean:
+	rm -rf *.jou *.log *.pb *.wdb *.wcfg $(XSIM_WD)/ .Xil/
+
+.PHONY: clean run run_gui run_wave view_wave
