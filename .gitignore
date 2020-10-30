@@ -1,8 +1,10 @@
 /.vscode/
 /.Xil/
 /xsim.dir/
+/ip/
 *.log
 *.jou
 *.pb
 *.wdb
 *.wcfg
+xvlog-parse-ip.prj

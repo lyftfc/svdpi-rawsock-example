@@ -34,6 +34,7 @@ def createTopo():
     info( '*** Adding hosts\n' )
     h1 = net.addHost('h1')
     h2 = net.addHost('h2')
+    h3 = net.addHost('h3')
 
     info( '*** Adding switch\n' )
     s1 = net.addSwitch('s1', logFile="./xsim-mn-out.log")
@@ -41,6 +42,7 @@ def createTopo():
     info( '*** Creating links\n' )
     l1 = net.addLink(h1, s1)
     l2 = net.addLink(h2, s1)
+    l3 = net.addLink(h3, s1)
 
     return net
 
