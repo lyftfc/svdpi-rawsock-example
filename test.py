@@ -8,7 +8,7 @@ from mininet.log import setLogLevel, info
 from mininet.util import errFail, waitListening
 
 class SimuSwitch(Switch):
-    binary = "/tools/Xilinx/Vivado/2020.1/bin/xsim work.sim_top -R"
+    binary = "make run_wave"
 
     def __init__(self, name, logFile="/dev/null", inNamespace=True, parameters=[], **params):
         Switch.__init__( self, name, inNamespace=inNamespace, **params )

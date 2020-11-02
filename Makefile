@@ -29,7 +29,7 @@ XSIM_INIT = "/tools/Xilinx/Vivado/2020.1/data/xsim/ip/xsim_ip.ini"
 sim: $(SIM_BINARY)
 
 $(SIM_BINARY): $(ANALYSE_OUT) $(DPI_BINARY) $(XSIM_WD)/xil_defaultlib/@ether@switch_@top.sdb
-	$(XIL_PATH)/xelab $(TOP_MOD) -sv_lib dpi --initfile $(XSIM_INIT) $(HDL_LIBS) -debug typical
+	$(XIL_PATH)/xelab $(TOP_MOD) -sv_lib dpi --initfile $(XSIM_INIT) $(HDL_LIBS) -debug all
 
 $(XSIM_WD)/$(XSC_WD)/%.sdb: %.sv
 	$(XIL_PATH)/xvlog -svlog $<

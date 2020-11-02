@@ -1,5 +1,6 @@
 /.vscode/
 /.Xil/
+/.hbs/
 /xsim.dir/
 /ip/
 *.log
@@ -8,3 +9,4 @@
 *.wdb
 *.wcfg
 xvlog-parse-ip.prj
+/*.dat
